@@ -1080,16 +1080,16 @@ audio {
 	bottom: -200px;
 	opacity: 0.6;
 	z-index: 99;
+	min-width: 100px;
 	width: auto;
 	height: 183px;
 	background-repeat: no-repeat no-repeat;
-	background-size: auto 183px;
+	background-size: 100px 183px;
 }
 .balloons h2 {
 	text-transform: uppercase;
 	font-family: 'Signika', sans-serif;
 	font-size: 150px;
-	font-weight: bolder;
 	color: #BF4136;
 	text-shadow: 5px 5px 5px #FFF;
 	display: none;
@@ -1114,9 +1114,6 @@ audio {
 }
 #b7,#b77{
 	background-image: url('b7.png');
-}
-#b8,#b88{
-	background-image: url('b8.png');
 }
 .balloons-rotate-behaviour-one {
 	-webkit-animation: balloons_rotate_one linear 10s infinite;
