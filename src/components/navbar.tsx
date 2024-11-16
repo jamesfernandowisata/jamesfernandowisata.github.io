@@ -1,27 +1,14 @@
 
 export default function NavBar() {
 
-
-
-
-
-
-
     return (
     <div>
         <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" ></script>
       <script>
-      $( document ).ready(function() {
-        var chain = $("#chains")[0];
-        $(".img-wrapper").mouseenter(function() {
-        chain.currentTime = 0;
-        chain.play();
-        });
-    });
-        
+ 
     </script>  
 <audio id="chains" preload="auto">
-	<source src="http://www.img.kevinquach.ca/wp-content/uploads/2017/04/chain-sound.mp3" controls></source>
+	<source src="http://www.img.kevinquach.ca/wp-content/uploads/2017/04/chain-sound.mp3"></source>
 </audio>
 <div className="navbar">
   <a className="link-wrapper" href="#">
