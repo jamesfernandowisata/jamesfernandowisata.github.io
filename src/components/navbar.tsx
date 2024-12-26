@@ -1,53 +1,53 @@
-
+import "../components/navbar.css";
 export default function NavBar() {
 
     return (
-    <div>
-        <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" ></script>
-      <script>
  
-    </script>  
-<audio id="chains" preload="auto">
-	<source src="http://www.img.kevinquach.ca/wp-content/uploads/2017/04/chain-sound.mp3"></source>
-</audio>
-<div className="navbar">
-  <a className="link-wrapper" href="#">
-    <span className="fallback">Index</span>
-    <div className="img-wrapper">
-      <img className="normal" src="https://i.imgur.com/H4JD35M.png"/>
-      <img className="active" src="https://i.imgur.com/ELytdKg.png"/>
-    </div>
-    <div className="shape-wrapper">
-        <div className="shape red-fill jelly">
-        <svg x="0px" y="0px"
-             viewBox="0 0 108.1 47" enable-background="new 0 0 108.1 47">
-            <polygon fill="#FF0000" points="29.5,8.5 150.7,0 108.1,32.7 3.1,47 "/>
-        </svg>
+     
+      <div className="navbar" suppressHydrationWarning>
+          
+        <a className="link-wrapper" href="#">
+        <span className="fallback">Index</span>
+        <div className="img-wrapper">
+            <img className="normal" src="https://i.imgur.com/H4JD35M.png"/>
+            <img className="active" src="https://i.imgur.com/ELytdKg.png"/>
         </div>
-        <div className="shape cyan-fill jelly"><svg x="0px" y="0px"
-            viewBox="0 0 108.1 47" enable-background="new 0 0 108.1 47">
-            <polygon fill="#00FFFF" points="0.3,17 125.1,0 68.8,45.6 24.3,39 "/>
-        </svg>
+        <div className="shape-wrapper">
+            <div className="shape red-fill jelly">
+              <svg x="0px" y="0px"
+                viewBox="0 0 108.1 47" enableBackground="new 0 0 108.1 47">
+                  <polygon fill="#FF0000" points="29.5,8.5 150.7,0 108.1,32.7 3.1,47 "/>
+              </svg>
+            </div>
+            <div className="shape cyan-fill jelly">
+              <svg x="0px" y="0px"
+                viewBox="0 0 108.1 47" enableBackground="new 0 0 108.1 47">
+                  <polygon fill="#00FFFF" points="0.3,17 125.1,0 68.8,45.6 24.3,39 "/>
+              </svg>
+            </div>
         </div>
-    </div>
-  </a>
-  <a className="link-wrapper" href="#">
-    <span className="fallback">Ask</span>
-    <div className="img-wrapper">
-      <img className="normal" src="https://i.imgur.com/YchoxsT.png"/>
-      <img className="active" src="https://i.imgur.com/gebq1bn.png"/>
-    </div>
-    <div className="shape-wrapper">
-      <div className="shape red-fill jelly"><svg x="0px" y="0px"
-     viewBox="0 0 108.1 47" enable-background="new 0 0 108.1 47">
-<polygon fill="#FF0000" points="0,7.1 127.3,0 32.3,64 4.8,58.2"/>
-</svg></div>
-      <div className="shape cyan-fill jelly"><svg x="0px" y="0px"
-     viewBox="0 0 108.1 47" enable-background="new 0 0 108.1 47">
-<polygon fill="#00FFFF" points="14,0.5 127.4,0 77.4,164 2.3,61.1 "/>
-</svg></div>
-    </div>
-  </a>
+        </a>
+        <a className="link-wrapper" href="#">
+          <span className="fallback">Ask</span>
+            <div className="img-wrapper">
+              <img className="normal" src="https://i.imgur.com/YchoxsT.png"/>
+              <img className="active" src="https://i.imgur.com/gebq1bn.png"/>
+            </div>
+            <div className="shape-wrapper">
+              <div className="shape red-fill jelly">
+                <svg x="0px" y="0px"
+                  viewBox="0 0 108.1 47" enableBackground="new 0 0 108.1 47">
+                  <polygon fill="#FF0000" points="0,7.1 127.3,0 32.3,64 4.8,58.2"/>
+                </svg>
+              </div>
+              <div className="shape cyan-fill jelly">
+                <svg x="0px" y="0px"
+                viewBox="0 0 108.1 47" enableBackground="new 0 0 108.1 47">
+                  <polygon fill="#00FFFF" points="14,0.5 127.4,0 77.4,164 2.3,61.1 "/>
+                </svg>
+              </div>
+            </div>
+        </a>
   <a className="link-wrapper" href="#">
     <span className="fallback">Archive</span>
     <div className="img-wrapper">
@@ -56,11 +56,11 @@ export default function NavBar() {
     </div>
     <div className="shape-wrapper">
       <div className="shape red-fill jelly"><svg x="0px" y="0px"
-     viewBox="0 0 108.1 47" enable-background="new 0 0 108.1 47">
+     viewBox="0 0 108.1 47" enableBackground="new 0 0 108.1 47">
 <polygon fill="#FF0000" points="15.5,0 70.7,0 118.1,32.7 43.1,47 "/>
 </svg></div>
       <div className="shape cyan-fill jelly"><svg x="0px" y="0px"
-     viewBox="0 0 108.1 47" enable-background="new 0 0 108.1 47">
+     viewBox="0 0 108.1 47" enableBackground="new 0 0 108.1 47">
 <polygon fill="#00FFFF" points="17.3,0 105.1,0 68.8,45.6 24.3,39 "/>
 </svg></div>
     </div>
@@ -73,11 +73,11 @@ export default function NavBar() {
     </div>
     <div className="shape-wrapper">
       <div className="shape red-fill jelly"><svg x="0px" y="0px"
-     viewBox="0 0 108.1 47" enable-background="new 0 0 108.1 47">
+     viewBox="0 0 108.1 47" enableBackground="new 0 0 108.1 47">
 <polygon fill="#FF0000" points="19.5,0,110.7,0,80.1,32.7,3.1,47 "/>
 </svg></div>
       <div className="shape cyan-fill jelly"><svg x="0px" y="0px"
-     viewBox="0 0 108.1 47" enable-background="new 0 0 108.1 47">
+     viewBox="0 0 108.1 47" enableBackground="new 0 0 108.1 47">
 <polygon fill="#00FFFF" points="11,3,85.1,0 118.8,45.6,14.3,29 "/>
 </svg></div>
     </div>
@@ -90,11 +90,11 @@ export default function NavBar() {
     </div>
     <div className="shape-wrapper">
       <div className="shape red-fill jelly"><svg x="0px" y="0px"
-     viewBox="0 0 108.1 47" enable-background="new 0 0 108.1 47">
+     viewBox="0 0 108.1 47" enableBackground="new 0 0 108.1 47">
 <polygon fill="#FF0000" points="0,7.1 127.3,0 32.3,64 4.8,58.2"/>
 </svg></div>
       <div className="shape cyan-fill jelly"><svg x="0px" y="0px"
-     viewBox="0 0 108.1 47" enable-background="new 0 0 108.1 47">
+     viewBox="0 0 108.1 47" enableBackground="new 0 0 108.1 47">
 <polygon fill="#00FFFF" points="14,0.5 127.4,0 77.4,164 2.3,61.1 "/>
 </svg></div>
     </div>
@@ -107,11 +107,11 @@ export default function NavBar() {
     </div>
     <div className="shape-wrapper">
       <div className="shape red-fill jelly"><svg x="0px" y="0px"
-     viewBox="0 0 108.1 47" enable-background="new 0 0 108.1 47">
+     viewBox="0 0 108.1 47" enableBackground="new 0 0 108.1 47">
 <polygon fill="#FF0000" points="0,7.1 127.3,0 32.3,64 4.8,58.2"/>
 </svg></div>
       <div className="shape cyan-fill jelly"><svg x="0px" y="0px"
-     viewBox="0 0 108.1 47" enable-background="new 0 0 108.1 47">
+     viewBox="0 0 108.1 47" enableBackground="new 0 0 108.1 47">
 <polygon fill="#00FFFF" points="14,0.5 127.4,0 77.4,164 2.3,61.1 "/>
 </svg></div>
     </div>
@@ -124,17 +124,17 @@ export default function NavBar() {
     </div>
 <div className="shape-wrapper">
       <div className="shape red-fill jelly"><svg x="0px" y="0px"
-     viewBox="0 0 108.1 47" enable-background="new 0 0 108.1 47">
+     viewBox="0 0 108.1 47" enableBackground="new 0 0 108.1 47">
 <polygon fill="#FF0000" points="15.5,0 70.7,0 118.1,32.7 43.1,47 "/>
 </svg></div>
       <div className="shape cyan-fill jelly"><svg x="0px" y="0px"
-     viewBox="0 0 108.1 47" enable-background="new 0 0 108.1 47">
+     viewBox="0 0 108.1 47" enableBackground="new 0 0 108.1 47">
 <polygon fill="#00FFFF" points="17.3,0 105.1,0 68.8,45.6 24.3,39 "/>
 </svg></div>
     </div>
   </a>
 </div>
-    </div>
+    
 
  ); 
  }
