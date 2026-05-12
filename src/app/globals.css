@@ -21,7 +21,14 @@ body {
   background-image: url("../../public/bg_contents_pc.jpg");
   background-repeat:repeat;
 }
-
+p.stretch {
+  display:inline-block;
+  -webkit-transform:scale(1,1); /* Safari and Chrome */
+  -moz-transform:scale(2,1); /* Firefox */
+  -ms-transform:scale(2,1); /* IE 9 */
+  -o-transform:scale(2,1); /* Opera */
+  transform:scale(2 ,1); /* W3C */
+}
 @layer utilities {
   .text-balance {
     text-wrap: balance;
