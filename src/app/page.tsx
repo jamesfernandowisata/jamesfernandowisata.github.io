@@ -16,7 +16,7 @@ export default function Home() {
     <body suppressHydrationWarning>
     <NavBar/>
     <div className="fixed z-1 pl-24 text-white text-6xl Bodoni w-full">
-    <span className={Bodoni.className}> <p className="stretch pl-48 pt-10">JAMES FERNANDO</p></span>
+    <span className={Bodoni.className}> <p className="stretch pl-48 pt-10">JAMES FERNANDO WISATA</p></span>
   
       </div>
     <div className="pl-96" >
