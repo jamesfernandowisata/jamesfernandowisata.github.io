@@ -1,10 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type WindowId = "profile" | "projects" | "notes";
 type LauncherId = WindowId | "games";
+type StickerKind = "picture" | "word";
+type StickerTarget =
+  | { type: "launcher"; id: LauncherId }
+  | { type: "route"; href: string };
 
 type LauncherItem = {
   id: LauncherId;
@@ -12,11 +16,77 @@ type LauncherItem = {
   shortcut: string;
 };
 
+type StickerTemplate = {
+  id: string;
+  kind: StickerKind;
+  label: string;
+  caption: string;
+  target: StickerTarget;
+  image?: string;
+};
+
+type DesktopSticker = StickerTemplate & {
+  x: number;
+  y: number;
+};
+
+type DragState =
+  | {
+      id: "window";
+      moved: boolean;
+      originX: number;
+      originY: number;
+      pointerId: number;
+      startX: number;
+      startY: number;
+    }
+  | {
+      id: string;
+      moved: boolean;
+      originX: number;
+      originY: number;
+      pointerId: number;
+      startX: number;
+      startY: number;
+    };
+
 const launcherItems: LauncherItem[] = [
   { id: "profile", label: "Profile", shortcut: "JF" },
   { id: "projects", label: "Projects", shortcut: "PX" },
   { id: "games", label: "Games", shortcut: "GM" },
   { id: "notes", label: "Notes", shortcut: "NT" },
+];
+
+const stickerPool: StickerTemplate[] = [
+  {
+    id: "ping-pong-picture",
+    kind: "picture",
+    label: "Ping Pong",
+    caption: "Open games",
+    image: "/bg_contents_pc.jpg",
+    target: { type: "route", href: "/games/" },
+  },
+  {
+    id: "games-word",
+    kind: "word",
+    label: "PLAY",
+    caption: "Game shelf",
+    target: { type: "launcher", id: "games" },
+  },
+  {
+    id: "projects-word",
+    kind: "word",
+    label: "BUILD",
+    caption: "Projects",
+    target: { type: "launcher", id: "projects" },
+  },
+  {
+    id: "notes-picture",
+    kind: "picture",
+    label: "Notes",
+    caption: "Open notes",
+    target: { type: "launcher", id: "notes" },
+  },
 ];
 
 const projects = [
@@ -46,15 +116,44 @@ const notes = [
   "Make every project feel touchable within two clicks.",
 ];
 
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function randomBetween(min: number, max: number) {
+  return Math.round(min + Math.random() * (max - min));
+}
+
 export default function Desktop() {
   const router = useRouter();
+  const canvasRef = useRef<HTMLElement>(null);
+  const dragStateRef = useRef<DragState | null>(null);
+  const suppressClickRef = useRef(false);
   const [activeWindow, setActiveWindow] = useState<WindowId>("profile");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [stickers, setStickers] = useState<DesktopSticker[]>([]);
+  const [windowOffset, setWindowOffset] = useState({ x: 0, y: 0 });
 
   const activeItem = useMemo(
     () => launcherItems.find((item) => item.id === activeWindow),
     [activeWindow],
   );
+
+  useEffect(() => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    const width = rect?.width ?? window.innerWidth;
+    const height = rect?.height ?? window.innerHeight;
+    const count = randomBetween(1, 3);
+    const shuffled = [...stickerPool].sort(() => Math.random() - 0.5);
+
+    setStickers(
+      shuffled.slice(0, count).map((sticker, index) => ({
+        ...sticker,
+        x: randomBetween(132, Math.max(160, width - 210)),
+        y: randomBetween(74 + index * 38, Math.max(150, height - 190)),
+      })),
+    );
+  }, []);
 
   function openLauncher(id: LauncherId) {
     setIsMenuOpen(false);
@@ -67,9 +166,114 @@ export default function Desktop() {
     setActiveWindow(id);
   }
 
+  function openSticker(sticker: DesktopSticker) {
+    if (sticker.target.type === "route") {
+      router.push(sticker.target.href);
+      return;
+    }
+
+    openLauncher(sticker.target.id);
+  }
+
+  function beginWindowDrag(event: React.PointerEvent<HTMLElement>) {
+    if (event.button !== 0) {
+      return;
+    }
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragStateRef.current = {
+      id: "window",
+      moved: false,
+      originX: windowOffset.x,
+      originY: windowOffset.y,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+    };
+  }
+
+  function beginStickerDrag(
+    event: React.PointerEvent<HTMLButtonElement>,
+    sticker: DesktopSticker,
+  ) {
+    if (event.button !== 0) {
+      return;
+    }
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragStateRef.current = {
+      id: sticker.id,
+      moved: false,
+      originX: sticker.x,
+      originY: sticker.y,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+    };
+  }
+
+  function moveDrag(event: React.PointerEvent<HTMLElement>) {
+    const dragState = dragStateRef.current;
+
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const deltaX = event.clientX - dragState.startX;
+    const deltaY = event.clientY - dragState.startY;
+    const moved = Math.abs(deltaX) + Math.abs(deltaY) > 4;
+    dragState.moved = dragState.moved || moved;
+
+    if (dragState.id === "window") {
+      setWindowOffset({
+        x: dragState.originX + deltaX,
+        y: dragState.originY + deltaY,
+      });
+      return;
+    }
+
+    const rect = canvasRef.current?.getBoundingClientRect();
+    const maxX = Math.max(24, (rect?.width ?? window.innerWidth) - 160);
+    const maxY = Math.max(64, (rect?.height ?? window.innerHeight) - 150);
+
+    setStickers((currentStickers) =>
+      currentStickers.map((sticker) =>
+        sticker.id === dragState.id
+          ? {
+              ...sticker,
+              x: clamp(dragState.originX + deltaX, 12, maxX),
+              y: clamp(dragState.originY + deltaY, 52, maxY),
+            }
+          : sticker,
+      ),
+    );
+  }
+
+  function endDrag(event: React.PointerEvent<HTMLElement>) {
+    const dragState = dragStateRef.current;
+
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    suppressClickRef.current = dragState.moved;
+    dragStateRef.current = null;
+
+    window.setTimeout(() => {
+      suppressClickRef.current = false;
+    }, 0);
+  }
+
   return (
     <main className="desktop-shell" aria-label="James Fernando portfolio desktop">
-      <section className="desktop-canvas" aria-label="Portfolio launcher">
+      <section
+        className="desktop-canvas"
+        ref={canvasRef}
+        aria-label="Portfolio launcher"
+        onPointerCancel={endDrag}
+        onPointerMove={moveDrag}
+        onPointerUp={endDrag}
+      >
         <div className="desktop-status">
           <span>James Fernando</span>
           <span>Portfolio OS</span>
@@ -89,8 +293,54 @@ export default function Desktop() {
           ))}
         </div>
 
-        <article className={`desktop-window window-${activeWindow}`}>
-          <header className="window-titlebar">
+        <div className="desktop-sticker-layer" aria-label="Random desktop links">
+          {stickers.map((sticker) => (
+            <button
+              className={`desktop-sticker is-${sticker.kind}`}
+              key={sticker.id}
+              onClick={() => {
+                if (suppressClickRef.current) {
+                  return;
+                }
+
+                openSticker(sticker);
+              }}
+              onPointerCancel={endDrag}
+              onPointerDown={(event) => beginStickerDrag(event, sticker)}
+              onPointerMove={moveDrag}
+              onPointerUp={endDrag}
+              style={{ left: sticker.x, top: sticker.y }}
+              type="button"
+            >
+              {sticker.kind === "picture" && (
+                <span
+                  className="sticker-picture"
+                  style={{
+                    backgroundImage: sticker.image
+                      ? `url(${sticker.image})`
+                      : undefined,
+                  }}
+                />
+              )}
+              <strong>{sticker.label}</strong>
+              <small>{sticker.caption}</small>
+            </button>
+          ))}
+        </div>
+
+        <article
+          className={`desktop-window window-${activeWindow}`}
+          style={{
+            transform: `translate(${windowOffset.x}px, ${windowOffset.y}px)`,
+          }}
+        >
+          <header
+            className="window-titlebar"
+            onPointerCancel={endDrag}
+            onPointerDown={beginWindowDrag}
+            onPointerMove={moveDrag}
+            onPointerUp={endDrag}
+          >
             <div>
               <span className="traffic-dot" />
               <span className="window-title">{activeItem?.label}</span>
@@ -99,6 +349,7 @@ export default function Desktop() {
               aria-label="Close window"
               className="window-close"
               onClick={() => setActiveWindow("profile")}
+              onPointerDown={(event) => event.stopPropagation()}
               type="button"
             >
               X
