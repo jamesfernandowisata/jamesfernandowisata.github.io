@@ -26,6 +26,7 @@ The site is configured for static export so it can be deployed cleanly to GitHub
 ## Project Notes
 
 - `src/app/page.tsx` mounts the portfolio desktop.
-- `src/components/desktop.tsx` contains the launcher, windows, project menu, and mini game.
+- `src/components/desktop.tsx` contains the launcher, windows, and project menu.
+- `src/app/games/page.tsx` contains the `/games` shelf.
 - `src/app/globals.css` contains the desktop visual system and responsive layout.
-- Add new projects or games by extending the arrays in `src/components/desktop.tsx`.
+- Add standalone games under `public/games/<game-name>/index.html`, then link them from `src/app/games/page.tsx`.

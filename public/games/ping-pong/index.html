@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ping Pong</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --paper: #fbf3df;
+        --ink: #080807;
+        --red: #ff4d2e;
+        --cyan: #6ce2df;
+        --yellow: #f1c85b;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        align-items: center;
+        background:
+          linear-gradient(90deg, rgba(8, 8, 7, 0.96), rgba(8, 8, 7, 0.82)),
+          #080807;
+        color: var(--paper);
+        display: grid;
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+        min-height: 100vh;
+        padding: 22px;
+      }
+
+      main {
+        margin: 0 auto;
+        max-width: 920px;
+        width: 100%;
+      }
+
+      a {
+        border: 1px solid rgba(251, 243, 223, 0.28);
+        color: var(--paper);
+        display: inline-flex;
+        font-size: 0.78rem;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        margin-bottom: 18px;
+        min-height: 42px;
+        padding: 12px 14px;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+
+      header {
+        align-items: end;
+        display: flex;
+        gap: 18px;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+
+      h1 {
+        font-family: Georgia, serif;
+        font-size: 3.8rem;
+        font-weight: 400;
+        line-height: 0.9;
+        margin: 0;
+      }
+
+      .score {
+        color: var(--cyan);
+        font-size: 1.4rem;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+      }
+
+      canvas {
+        background:
+          linear-gradient(rgba(251, 243, 223, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(251, 243, 223, 0.05) 1px, transparent 1px),
+          #121210;
+        background-size: 28px 28px;
+        border: 1px solid rgba(251, 243, 223, 0.32);
+        box-shadow: 12px 12px 0 var(--red);
+        display: block;
+        max-width: 100%;
+        width: 100%;
+      }
+
+      .controls {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: space-between;
+        margin-top: 24px;
+      }
+
+      button {
+        background: var(--paper);
+        border: 0;
+        color: var(--ink);
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.78rem;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        min-height: 44px;
+        padding: 0 16px;
+        text-transform: uppercase;
+      }
+
+      p {
+        color: rgba(251, 243, 223, 0.68);
+        line-height: 1.6;
+        margin: 0;
+      }
+
+      @media (max-width: 620px) {
+        body {
+          padding: 14px;
+        }
+
+        header {
+          align-items: start;
+          flex-direction: column;
+        }
+
+        h1 {
+          font-size: 2.8rem;
+        }
+
+        canvas {
+          box-shadow: 6px 6px 0 var(--red);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a href="/games/">Back to games</a>
+      <header>
+        <h1>Ping Pong</h1>
+        <div class="score" aria-live="polite">
+          <span id="player-score">0</span> : <span id="cpu-score">0</span>
+        </div>
+      </header>
+
+      <canvas id="game" width="720" height="420" aria-label="Ping pong game"></canvas>
+
+      <div class="controls">
+        <button id="serve" type="button">Serve</button>
+        <p>Move with mouse, touch, W/S, or Arrow Up/Down.</p>
+      </div>
+    </main>
+
+    <script>
+      const canvas = document.querySelector("#game");
+      const ctx = canvas.getContext("2d");
+      const serveButton = document.querySelector("#serve");
+      const playerScore = document.querySelector("#player-score");
+      const cpuScore = document.querySelector("#cpu-score");
+
+      const state = {
+        player: 0,
+        cpu: 0,
+        running: false,
+        keys: new Set(),
+        ball: { x: 360, y: 210, vx: 4, vy: 3, size: 10 },
+        left: { x: 24, y: 160, width: 12, height: 96 },
+        right: { x: 684, y: 160, width: 12, height: 96 },
+      };
+
+      function resetBall(direction) {
+        state.ball.x = canvas.width / 2;
+        state.ball.y = canvas.height / 2;
+        state.ball.vx = 4 * direction;
+        state.ball.vy = (Math.random() > 0.5 ? 1 : -1) * 3;
+      }
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function intersects(ball, paddle) {
+        return (
+          ball.x < paddle.x + paddle.width &&
+          ball.x + ball.size > paddle.x &&
+          ball.y < paddle.y + paddle.height &&
+          ball.y + ball.size > paddle.y
+        );
+      }
+
+      function update() {
+        if (state.keys.has("ArrowUp") || state.keys.has("w")) {
+          state.left.y -= 7;
+        }
+
+        if (state.keys.has("ArrowDown") || state.keys.has("s")) {
+          state.left.y += 7;
+        }
+
+        state.left.y = clamp(state.left.y, 0, canvas.height - state.left.height);
+
+        const cpuCenter = state.right.y + state.right.height / 2;
+        const ballCenter = state.ball.y + state.ball.size / 2;
+        state.right.y += (ballCenter - cpuCenter) * 0.08;
+        state.right.y = clamp(state.right.y, 0, canvas.height - state.right.height);
+
+        state.ball.x += state.ball.vx;
+        state.ball.y += state.ball.vy;
+
+        if (state.ball.y <= 0 || state.ball.y + state.ball.size >= canvas.height) {
+          state.ball.vy *= -1;
+        }
+
+        if (intersects(state.ball, state.left) && state.ball.vx < 0) {
+          state.ball.vx *= -1.08;
+          state.ball.x = state.left.x + state.left.width;
+        }
+
+        if (intersects(state.ball, state.right) && state.ball.vx > 0) {
+          state.ball.vx *= -1.08;
+          state.ball.x = state.right.x - state.ball.size;
+        }
+
+        if (state.ball.x < -state.ball.size) {
+          state.cpu += 1;
+          cpuScore.textContent = state.cpu;
+          resetBall(1);
+        }
+
+        if (state.ball.x > canvas.width + state.ball.size) {
+          state.player += 1;
+          playerScore.textContent = state.player;
+          resetBall(-1);
+        }
+      }
+
+      function drawNet() {
+        ctx.fillStyle = "rgba(251, 243, 223, 0.28)";
+        for (let y = 12; y < canvas.height; y += 28) {
+          ctx.fillRect(canvas.width / 2 - 2, y, 4, 14);
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawNet();
+
+        ctx.fillStyle = "#fbf3df";
+        ctx.fillRect(state.left.x, state.left.y, state.left.width, state.left.height);
+        ctx.fillRect(state.right.x, state.right.y, state.right.width, state.right.height);
+
+        ctx.fillStyle = "#6ce2df";
+        ctx.fillRect(state.ball.x, state.ball.y, state.ball.size, state.ball.size);
+      }
+
+      function loop() {
+        if (state.running) {
+          update();
+        }
+
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      function pointerMove(event) {
+        const rect = canvas.getBoundingClientRect();
+        const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+        const scale = canvas.height / rect.height;
+        state.left.y = clamp(
+          (clientY - rect.top) * scale - state.left.height / 2,
+          0,
+          canvas.height - state.left.height,
+        );
+      }
+
+      canvas.addEventListener("mousemove", pointerMove);
+      canvas.addEventListener("touchmove", pointerMove, { passive: true });
+
+      window.addEventListener("keydown", (event) => {
+        state.keys.add(event.key);
+      });
+
+      window.addEventListener("keyup", (event) => {
+        state.keys.delete(event.key);
+      });
+
+      serveButton.addEventListener("click", () => {
+        state.running = true;
+      });
+
+      draw();
+      loop();
+    </script>
+  </body>
+</html>

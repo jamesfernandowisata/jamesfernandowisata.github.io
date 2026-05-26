@@ -1,11 +1,13 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
-type WindowId = "profile" | "projects" | "games" | "notes";
+type WindowId = "profile" | "projects" | "notes";
+type LauncherId = WindowId | "games";
 
 type LauncherItem = {
-  id: WindowId;
+  id: LauncherId;
   label: string;
   shortcut: string;
 };
@@ -44,33 +46,25 @@ const notes = [
   "Make every project feel touchable within two clicks.",
 ];
 
-function nextTarget(current: number) {
-  return (current * 7 + 5) % 16;
-}
-
 export default function Desktop() {
+  const router = useRouter();
   const [activeWindow, setActiveWindow] = useState<WindowId>("profile");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [score, setScore] = useState(0);
-  const [target, setTarget] = useState(6);
 
   const activeItem = useMemo(
     () => launcherItems.find((item) => item.id === activeWindow),
     [activeWindow],
   );
 
-  function openWindow(id: WindowId) {
-    setActiveWindow(id);
+  function openLauncher(id: LauncherId) {
     setIsMenuOpen(false);
-  }
 
-  function hitTarget(index: number) {
-    if (index !== target) {
+    if (id === "games") {
+      router.push("/games/");
       return;
     }
 
-    setScore((currentScore) => currentScore + 1);
-    setTarget((currentTarget) => nextTarget(currentTarget));
+    setActiveWindow(id);
   }
 
   return (
@@ -86,7 +80,7 @@ export default function Desktop() {
             <button
               className="desktop-icon"
               key={item.id}
-              onClick={() => openWindow(item.id)}
+              onClick={() => openLauncher(item.id)}
               type="button"
             >
               <span>{item.shortcut}</span>
@@ -120,10 +114,18 @@ export default function Desktop() {
                 games that deserve to be opened like little apps.
               </p>
               <div className="profile-actions">
-                <button className="button-primary" onClick={() => openWindow("projects")} type="button">
+                <button
+                  className="button-primary"
+                  onClick={() => openLauncher("projects")}
+                  type="button"
+                >
                   Open projects
                 </button>
-                <button className="button-secondary" onClick={() => openWindow("games")} type="button">
+                <button
+                  className="button-secondary"
+                  onClick={() => openLauncher("games")}
+                  type="button"
+                >
                   Try game
                 </button>
               </div>
@@ -147,44 +149,6 @@ export default function Desktop() {
                     <p>{project.copy}</p>
                   </section>
                 ))}
-              </div>
-            </div>
-          )}
-
-          {activeWindow === "games" && (
-            <div className="window-body games-window">
-              <div className="window-heading">
-                <p className="eyebrow">Mini game</p>
-                <h2>Signal grid</h2>
-              </div>
-              <div className="game-panel">
-                <div className="game-controls">
-                  <div className="game-score">
-                    <span>Score</span>
-                    <strong>{score.toString().padStart(2, "0")}</strong>
-                  </div>
-                  <button
-                    className="button-secondary"
-                    onClick={() => {
-                      setScore(0);
-                      setTarget(6);
-                    }}
-                    type="button"
-                  >
-                    Reset
-                  </button>
-                </div>
-                <div className="signal-grid" aria-label="Signal grid game">
-                  {Array.from({ length: 16 }, (_, index) => (
-                    <button
-                      aria-label={`Signal cell ${index + 1}`}
-                      className={index === target ? "is-target" : ""}
-                      key={index}
-                      onClick={() => hitTarget(index)}
-                      type="button"
-                    />
-                  ))}
-                </div>
               </div>
             </div>
           )}
@@ -216,7 +180,7 @@ export default function Desktop() {
               <button
                 className={item.id === activeWindow ? "is-active" : ""}
                 key={item.id}
-                onClick={() => openWindow(item.id)}
+                onClick={() => openLauncher(item.id)}
                 type="button"
               >
                 {item.label}
@@ -229,7 +193,11 @@ export default function Desktop() {
           <div className="start-menu">
             <p>Launch</p>
             {launcherItems.map((item) => (
-              <button key={item.id} onClick={() => openWindow(item.id)} type="button">
+              <button
+                key={item.id}
+                onClick={() => openLauncher(item.id)}
+                type="button"
+              >
                 <span>{item.shortcut}</span>
                 {item.label}
               </button>
