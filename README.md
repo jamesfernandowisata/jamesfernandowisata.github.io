@@ -30,4 +30,6 @@ The site is configured for static export so it can be deployed cleanly to GitHub
 - Edit `stickerPool` in `src/components/desktop.tsx` to change the random draggable desktop pictures/words and their targets.
 - `src/app/games/page.tsx` contains the `/games` shelf.
 - `src/app/globals.css` contains the desktop visual system and responsive layout.
+- `public/backgrounds/list.json` controls the backgrounds that are picked on first open.
 - Add standalone games under `public/games/<game-name>/index.html`, then link them from `src/app/games/page.tsx`.
+- `backend/` contains a PostgreSQL API starter for hosting dynamic games and backgrounds outside GitHub Pages.

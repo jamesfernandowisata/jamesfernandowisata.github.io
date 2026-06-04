@@ -63,7 +63,7 @@ const stickerPool: StickerTemplate[] = [
     kind: "picture",
     label: "Ping Pong",
     caption: "Open games",
-    image: "/bg_contents_pc.jpg",
+    image: "/backgrounds/bg-contents.jpg",
     target: { type: "route", href: "/games/" },
   },
   {

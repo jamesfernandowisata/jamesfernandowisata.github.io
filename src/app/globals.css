@@ -16,6 +16,7 @@
   --green: #95cf72;
   --blue: #7598ff;
   --shadow: 0 26px 80px rgba(0, 0, 0, 0.44);
+  --desktop-bg-image: url("/backgrounds/bg-contents.jpg");
 }
 
 @font-face {
@@ -59,7 +60,7 @@ button {
 .desktop-canvas {
   background:
     linear-gradient(90deg, rgba(8, 8, 7, 0.92), rgba(8, 8, 7, 0.58), rgba(8, 8, 7, 0.92)),
-    url("/bg_contents_pc.jpg") center / cover,
+    var(--desktop-bg-image) center / cover,
     #161614;
   border: 1px solid rgba(251, 243, 223, 0.28);
   box-shadow: var(--shadow);
@@ -557,7 +558,7 @@ h3 {
 .games-page {
   background:
     linear-gradient(90deg, rgba(8, 8, 7, 0.94), rgba(8, 8, 7, 0.7)),
-    url("/bg_contents_pc.jpg") center / cover fixed,
+    var(--desktop-bg-image) center / cover fixed,
     var(--bg);
   min-height: 100vh;
   padding: 28px;
