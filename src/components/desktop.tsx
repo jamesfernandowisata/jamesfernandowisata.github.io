@@ -57,14 +57,19 @@ const launcherItems: LauncherItem[] = [
   { id: "games", label: "Games", shortcut: "GM" },
   { id: "notes", label: "Notes", shortcut: "NT" },
 ];
-const randomBackground = `/backgrounds/${Math.floor(Math.random() * 10) + 1}.jpg`;
+const backgroundPool = ['1.jpg', '2.png', '3.jpg', '4.jpg', '5.jpg', '6.png', '7.jpg', '8.png', '9.png', '10.jpg'];
+
+// 2. Pick a random image from the pool array
+const randomFilename = backgroundPool[Math.floor(Math.random() * backgroundPool.length)];
+const randomBackground1 = `/backgrounds/${randomFilename}`;
+
 const stickerPool: StickerTemplate[] = [
   {
     id: "ping-pong-picture",
     kind: "picture",
     label: "Ping Pong",
     caption: "Open games",
-    image:randomBackground,
+    image:randomBackground1,
     target: { type: "route", href: "/games/" },
   },
   {
@@ -95,13 +100,13 @@ const projects = [
     title: "Portfolio OS",
     type: "Site",
     status: "Main",
-    copy: "A desktop-style home for experiments, links, and tiny playable things.",
+    copy: "A desktop thing kinda inspired by classic desktop environments yes.",
   },
   {
     title: "Birthday Gift",
     type: "Archive",
     status: "Saved",
-    copy: "An older web toy kept as a little time capsule for future polish.",
+    copy: "Bday Gift to a dear friend, built with Next.js and Three.js. Click around for surprises.",
   },
   {
     title: "Project Slot",
