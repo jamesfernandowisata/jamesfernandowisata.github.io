@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ThemeToggle from "@/components/theme-toggle";
 
 const games = [
   {
@@ -13,9 +14,12 @@ export default function GamesPage() {
   return (
     <main className="games-page">
       <section className="games-shell" aria-labelledby="games-title">
-        <Link className="back-link" href="/">
-          Back to desktop
-        </Link>
+        <div className="games-topbar">
+          <Link className="back-link" href="/">
+            Back to desktop
+          </Link>
+          <ThemeToggle />
+        </div>
 
         <div className="games-heading">
           <p className="eyebrow">Game shelf</p>

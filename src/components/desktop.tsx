@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import ThemeToggle from "@/components/theme-toggle";
 
 type WindowId = "profile" | "projects" | "notes";
 type LauncherId = WindowId | "games";
@@ -276,7 +277,10 @@ export default function Desktop() {
       >
         <div className="desktop-status">
           <span>James Fernando</span>
-          <span>Portfolio OS</span>
+          <div className="desktop-status-actions">
+            <span>Portfolio OS</span>
+            <ThemeToggle />
+          </div>
         </div>
 
         <div className="desktop-icons" aria-label="Desktop shortcuts">

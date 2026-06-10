@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import BackgroundRotator from "@/components/background-rotator";
+import { ThemeInitializer } from "@/components/theme-toggle";
+import VisitTracker from "@/components/visit-tracker";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -17,6 +19,8 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <BackgroundRotator />
+        <ThemeInitializer />
+        <VisitTracker />
         {children}
       </body>
     </html>
