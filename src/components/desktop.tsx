@@ -57,14 +57,14 @@ const launcherItems: LauncherItem[] = [
   { id: "games", label: "Games", shortcut: "GM" },
   { id: "notes", label: "Notes", shortcut: "NT" },
 ];
-
+const randomBackground = `/backgrounds/${Math.floor(Math.random() * 10) + 1}.jpg`;
 const stickerPool: StickerTemplate[] = [
   {
     id: "ping-pong-picture",
     kind: "picture",
     label: "Ping Pong",
     caption: "Open games",
-    image: "/backgrounds/bg-contents.jpg",
+    image:randomBackground,
     target: { type: "route", href: "/games/" },
   },
   {
