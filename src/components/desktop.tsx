@@ -283,7 +283,7 @@ export default function Desktop() {
         <div className="desktop-status">
           <span>James Fernando</span>
           <div className="desktop-status-actions">
-            <span>Portfolio OS</span>
+            <span>Portfolio</span>
             <ThemeToggle />
           </div>
         </div>
