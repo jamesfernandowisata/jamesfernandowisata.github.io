@@ -27,6 +27,16 @@ values (
   10
 )
 on conflict (id) do nothing;
+insert into games (id, title, href, status, description, sort_order)
+values (
+  'maze',
+  'maze',
+  '/games/mazeindex.html',
+  'Playable',
+  'Maze Maxxing.',
+  10
+)
+on conflict (id) do nothing;
 
 insert into backgrounds (id, label, image_url, sort_order)
 values

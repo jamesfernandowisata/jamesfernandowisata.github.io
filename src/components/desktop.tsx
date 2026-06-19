@@ -59,7 +59,6 @@ const launcherItems: LauncherItem[] = [
 ];
 const backgroundPool = ['1.jpg', '2.png', '3.jpg', '4.jpg', '5.jpg', '6.png', '7.jpg', '8.png', '9.png', '10.jpg'];
 
-// 2. Pick a random image from the pool array
 const randomFilename = backgroundPool[Math.floor(Math.random() * backgroundPool.length)];
 const randomBackground1 = `/backgrounds/${randomFilename}`;
 
@@ -69,7 +68,7 @@ const stickerPool: StickerTemplate[] = [
     kind: "picture",
     label: "Ping Pong",
     caption: "Open games",
-    image:randomBackground1,
+    image: randomBackground1,
     target: { type: "route", href: "/games/" },
   },
   {
@@ -139,11 +138,23 @@ export default function Desktop() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [stickers, setStickers] = useState<DesktopSticker[]>([]);
   const [windowOffset, setWindowOffset] = useState({ x: 0, y: 0 });
+  const [isMobile, setIsMobile] = useState(false);
 
   const activeItem = useMemo(
     () => launcherItems.find((item) => item.id === activeWindow),
     [activeWindow],
   );
+
+  // Monitor screen size for mobile adaptations
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    handleResize(); // run initial check
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -152,11 +163,16 @@ export default function Desktop() {
     const count = randomBetween(1, 3);
     const shuffled = [...stickerPool].sort(() => Math.random() - 0.5);
 
+    // Dynamic boundaries for stickers on mobile vs desktop
+    const minX = width <= 768 ? 16 : 132;
+    const maxX = Math.max(minX + 40, width - 150);
+    const maxY = Math.max(150, height - 160);
+
     setStickers(
       shuffled.slice(0, count).map((sticker, index) => ({
         ...sticker,
-        x: randomBetween(132, Math.max(160, width - 210)),
-        y: randomBetween(74 + index * 38, Math.max(150, height - 190)),
+        x: randomBetween(minX, maxX),
+        y: randomBetween(74 + index * 38, maxY),
       })),
     );
   }, []);
@@ -182,7 +198,8 @@ export default function Desktop() {
   }
 
   function beginWindowDrag(event: React.PointerEvent<HTMLElement>) {
-    if (event.button !== 0) {
+    // Disable dragging windows on mobile for cleaner UX
+    if (event.button !== 0 || isMobile) {
       return;
     }
 
@@ -239,15 +256,15 @@ export default function Desktop() {
     }
 
     const rect = canvasRef.current?.getBoundingClientRect();
-    const maxX = Math.max(24, (rect?.width ?? window.innerWidth) - 160);
-    const maxY = Math.max(64, (rect?.height ?? window.innerHeight) - 150);
+    const maxX = Math.max(24, (rect?.width ?? window.innerWidth) - 140);
+    const maxY = Math.max(64, (rect?.height ?? window.innerHeight) - 120);
 
     setStickers((currentStickers) =>
       currentStickers.map((sticker) =>
         sticker.id === dragState.id
           ? {
               ...sticker,
-              x: clamp(dragState.originX + deltaX, 12, maxX),
+              x: clamp(dragState.originX + deltaX, 8, maxX),
               y: clamp(dragState.originY + deltaY, 52, maxY),
             }
           : sticker,
@@ -311,14 +328,14 @@ export default function Desktop() {
                 if (suppressClickRef.current) {
                   return;
                 }
-
                 openSticker(sticker);
               }}
               onPointerCancel={endDrag}
               onPointerDown={(event) => beginStickerDrag(event, sticker)}
               onPointerMove={moveDrag}
               onPointerUp={endDrag}
-              style={{ left: sticker.x, top: sticker.y }}
+              /* touchAction: "none" prevents mobile native page elastic scrolling while dragging stickers */
+              style={{ left: sticker.x, top: sticker.y, touchAction: "none" }}
               type="button"
             >
               {sticker.kind === "picture" && (
@@ -338,9 +355,11 @@ export default function Desktop() {
         </div>
 
         <article
-          className={`desktop-window window-${activeWindow}`}
+          className={`desktop-window window-${activeWindow} ${isMobile ? "is-mobile-fullscreen" : ""}`}
           style={{
-            transform: `translate(${windowOffset.x}px, ${windowOffset.y}px)`,
+            transform: isMobile 
+              ? "none" 
+              : `translate(${windowOffset.x}px, ${windowOffset.y}px)`,
           }}
         >
           <header
@@ -349,6 +368,8 @@ export default function Desktop() {
             onPointerDown={beginWindowDrag}
             onPointerMove={moveDrag}
             onPointerUp={endDrag}
+            /* touchAction: "none" prevents native viewport interference during drag hooks */
+            style={{ touchAction: isMobile ? "auto" : "none" }}
           >
             <div>
               <span className="traffic-dot" />

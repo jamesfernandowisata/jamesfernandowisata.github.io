@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AlgoMaze Sandbox</title>
+    <style>
+      :root {
+        --bg-color: #020617;
+        --panel-bg: #0f172a;
+        --border-color: #1e293b;
+        --text-main: #f1f5f9;
+        --text-muted: #94a3b8;
+        --indigo: #4f46e5;
+        --indigo-hover: #6366f1;
+        --purple: #9333ea;
+        --cyan: #22d3ee;
+        --emerald: #10b981;
+        --rose: #f43f5e;
+        --amber: #f59e0b;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      .sandbox-container {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        width: 100%;
+        max-width: 1152px;
+        margin: 0 auto;
+      }
+
+      @media (min-width: 1024px) {
+        .sandbox-container {
+          flex-direction: row;
+        }
+      }
+
+      /* Control Configuration Sidebar Panel */
+      .sidebar {
+        width: 100%;
+        background-color: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      @media (min-width: 1024px) {
+        .sidebar {
+          width: 320px;
+          flex-shrink: 0;
+        }
+      }
+
+      .brand-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .brand-title {
+        font-size: 1.125rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: linear-gradient(to right, #818cf8, #22d3ee);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .desc-text {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin-bottom: 24px;
+      }
+
+      .section-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #64748b;
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      /* Simulation State Badges */
+      .badge-container {
+        margin-bottom: 24px;
+      }
+
+      .state-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-width: 1px;
+        border-style: solid;
+      }
+
+      .state-setup { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border-color: rgba(59, 130, 246, 0.2); }
+      .state-racing { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border-color: rgba(245, 158, 11, 0.2); animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+      .state-visualizing { background: rgba(147, 51, 234, 0.1); color: #c084fc; border-color: rgba(147, 51, 234, 0.2); }
+      .state-won { background: rgba(16, 185, 129, 0.1); color: #34d399; border-color: rgba(16, 185, 129, 0.2); }
+      .state-lost { background: rgba(244, 63, 94, 0.1); color: #f87171; border-color: rgba(244, 63, 94, 0.2); }
+      .state-finished-vis { background: rgba(79, 70, 229, 0.1); color: #818cf8; border-color: rgba(79, 70, 229, 0.2); }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .5; }
+      }
+
+      /* Control Form Items */
+      .form-group {
+        margin-bottom: 16px;
+      }
+
+      .select-input {
+        width: 100%;
+        background-color: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 8px;
+        font-size: 0.75rem;
+        color: #e2e8f0;
+        outline: none;
+        cursor: pointer;
+      }
+
+      .select-input:focus {
+        border-color: var(--indigo);
+      }
+
+      .slider-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+      }
+
+      .range-input {
+        width: 100%;
+        height: 4px;
+        background: #1e293b;
+        border-radius: 8px;
+        appearance: none;
+        outline: none;
+        cursor: pointer;
+      }
+
+      .range-input::-webkit-slider-thumb {
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--indigo);
+      }
+
+      /* Button Systems */
+      .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 24px;
+      }
+
+      .btn {
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+      }
+
+      .btn-secondary {
+        background-color: #1e293b;
+        border-color: #334155;
+        color: #e2e8f0;
+      }
+
+      .btn-secondary:hover {
+        background-color: #334155;
+      }
+
+      .btn-primary {
+        background: linear-gradient(to right, var(--indigo), var(--purple));
+        color: white;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        opacity: 0.9;
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .btn-success {
+        background-color: #065f46;
+        color: white;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+      }
+
+      .btn-success:hover {
+        background-color: #047857;
+      }
+
+      /* Mathematical Complexity Outputs */
+      .stats-panel {
+        margin-top: 24px;
+        padding-top: 20px;
+        border-t: 1px solid rgba(30, 41, 59, 0.6);
+      }
+
+      .stats-title {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        font-size: 11px;
+      }
+
+      .stat-card {
+        background: rgba(2, 6, 23, 0.5);
+        padding: 8px;
+        border-radius: 12px;
+        border: 1px solid rgba(30, 41, 59, 0.4);
+      }
+
+      .stat-card-full {
+        grid-column: span 2 / span 2;
+      }
+
+      .stat-label {
+        color: #64748b;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: block;
+        margin-bottom: 2px;
+      }
+
+      .stat-value {
+        font-family: monospace;
+        font-weight: 700;
+      }
+
+      /* Primary Computational Display Grid Area */
+      .viewport {
+        flex: 1;
+        background-color: #020617;
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+        position: relative;
+        min-height: 450px;
+        overflow: hidden;
+      }
+
+      @media (min-width: 640px) {
+        .viewport { padding: 32px; }
+      }
+
+      /* Blueprint Matrix Grid Background Layer */
+      .viewport::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: 
+          linear-gradient(to right, #0f172a 1px, transparent 1px),
+          linear-gradient(to bottom, #0f172a 1px, transparent 1px);
+        background-size: 3rem 3rem;
+        opacity: 0.2;
+        pointer-events: none;
+      }
+
+      .maze-grid {
+        display: grid;
+        border: 1px solid rgba(30, 41, 59, 0.8);
+        background-color: var(--panel-bg);
+        box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+        border-radius: 12px;
+        overflow: hidden;
+        padding: 4px;
+        gap: 1px;
+        width: min(100%, 480px);
+        aspect-ratio: 1 / 1;
+      }
+
+      /* Cell Specific State Render Pipeline */
+      .cell {
+        transition: all 100ms;
+        position: relative;
+        border-radius: 1px;
+        background-color: #0f172a;
+      }
+
+      .cell-wall {
+        background-color: #020617;
+        box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.6);
+      }
+
+      .cell-target {
+        background-color: var(--emerald);
+        animation: pulse 1s infinite;
+      }
+
+      .cell-player {
+        background-color: var(--cyan);
+        box-shadow: 0 0 10px var(--cyan);
+        z-index: 10;
+        transform: scale(0.9);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .cell-ai {
+        background-color: var(--rose);
+        box-shadow: 0 0 10px var(--rose);
+        z-index: 10;
+        transform: scale(0.9);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .cell-path {
+        background: linear-gradient(to bottom right, #fde047, var(--amber));
+        box-shadow: 0 0 6px #f59e0b;
+      }
+
+      .cell-visited {
+        background-color: rgba(88, 28, 135, 0.6);
+        border: 1px solid rgba(107, 33, 168, 0.2);
+      }
+
+      .target-icon {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #020617;
+      }
+
+      /* Modal State Overlay Element */
+      .overlay {
+        position: absolute;
+        inset: 0;
+        background-color: rgba(2, 6, 23, 0.85);
+        backdrop-filter: blur(8px);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-center: center;
+        padding: 24px;
+        z-index: 40;
+      }
+
+      .overlay-icon-wrapper {
+        padding: 12px;
+        border-radius: 9999px;
+        margin-bottom: 12px;
+        border-width: 1px;
+        border-style: solid;
+      }
+
+      .icon-won { background: rgba(16, 185, 129, 0.1); color: var(--emerald); border-color: rgba(16, 185, 129, 0.2); }
+      .icon-lost { background: rgba(244, 63, 94, 0.1); color: var(--rose); border-color: rgba(244, 63, 94, 0.2); }
+
+      .overlay-title {
+        font-size: 1.25rem;
+        font-weight: 900;
+        color: var(--text-main);
+        margin-bottom: 4px;
+      }
+
+      .overlay-desc {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        max-width: 320px;
+        margin-bottom: 20px;
+        line-height: 1.6;
+        text-align: center;
+      }
+
+      .svg-icon {
+        width: 14px;
+        height: 14px;
+        vertical-align: middle;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="sandbox-container">
+      <div class="sidebar">
+        <div>
+          <div class="brand-header">
+            <svg class="svg-icon" style="color:#818cf8; width:20px; height:20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+            <h1 class="brand-title">AlgoMaze Sandbox</h1>
+          </div>
+          <p class="desc-text">
+            An immersive interface evaluating heuristic computation pipelines via <strong>A* Search Vector Graphs</strong> operating over structural <strong>DFS Backtracking</strong> lattices.
+          </p>
+
+          <div class="badge-container">
+            <span class="section-label">Simulation Engine State</span>
+            <span id="state-badge" class="state-badge state-setup">Ready (Press Key / Outrun)</span>
+          </div>
+
+          <div class="form-group">
+            <label class="section-label" for="dimensions">Grid Boundary Dimensions</label>
+            <select id="dimensions" class="select-input">
+              <option value="15">15 x 15 (Standard Space)</option>
+              <option value="21" selected>21 x 21 (Intermediate Node Density)</option>
+              <option value="31">31 x 31 (Complex Matrix Array)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <div class="slider-header">
+              <span>Ticks Interval Step Delay</span>
+              <span id="speed-label" style="color:var(--cyan); font-family:monospace;">20ms</span>
+            </div>
+            <input type="range" id="speed" min="5" max="80" value="20" class="range-input" />
+          </div>
+
+          <div class="action-buttons">
+            <button id="btn-reseed" class="btn btn-secondary">
+              <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              Re-seed Procedural Grid
+            </button>
+            <button id="btn-visualize" class="btn btn-primary">
+              <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M9 19h6M12 8v11"/></svg>
+              Run A* Vector Mapping
+            </button>
+            <button id="btn-race" class="btn btn-success">
+              <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Launch AI Race Mode
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-panel">
+          <h3 class="stats-title">
+            <svg class="svg-icon" style="color:#64748b; width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+            Runtime Complexities
+          </h3>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-label">CPU Compute</span>
+              <span id="stat-time" class="stat-value" style="color:var(--cyan);">0 ms</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Optimal Cost</span>
+              <span id="stat-cost" class="stat-value" style="color:var(--amber);">0 units</span>
+            </div>
+            <div class="stat-card stat-card-full">
+              <span class="stat-label">Evaluated State Space (Nodes Explored)</span>
+              <span id="stat-visited" class="stat-value" style="color:var(--purple);">0 vertices</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="viewport">
+        <div id="maze-container" class="maze-grid"></div>
+
+        <div id="result-overlay" class="overlay">
+          <div id="overlay-icon" class="overlay-icon-wrapper">
+            <svg style="width:32px; height:32px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34M12 2a4 4 0 0 1 4 4v6H8V6a4 4 0 0 1 4-4Z"/></svg>
+          </div>
+          <h2 id="overlay-title" class="overlay-title">Human Intelligence Wins!</h2>
+          <p id="overlay-desc" class="overlay-desc">Incredible execution speeds!</p>
+          <button id="btn-overlay-close" class="btn btn-primary" style="width:auto;">
+            Initialize Next Grid Plane
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Global App States Mapping
+      const state = {
+        width: 21,
+        height: 21,
+        grid: [],
+        playerPos: [1, 1],
+        aiPos: [1, 1],
+        targetPos: [19, 19],
+        gameState: 'setup', // setup, racing, visualizing, won, lost, finished-vis
+        visitedSet: new Set(),
+        pathSet: new Set(),
+        speed: 20,
+        stats: { visitedCount: 0, pathLength: 0, computeTime: 0 }
+      };
+
+      // Execution Thread/Loop Management Queues
+      let aiInterval = null;
+      let visTimeouts = [];
+
+      // Core Element Node Selectors
+      const container = document.querySelector('#maze-container');
+      const dimensionsSelect = document.querySelector('#dimensions');
+      const speedSlider = document.querySelector('#speed');
+      const speedLabel = document.querySelector('#speed-label');
+      const stateBadge = document.querySelector('#state-badge');
+      const statTime = document.querySelector('#stat-time');
+      const statCost = document.querySelector('#stat-cost');
+      const statVisited = document.querySelector('#stat-visited');
+      const overlay = document.querySelector('#result-overlay');
+      const overlayIcon = document.querySelector('#overlay-icon');
+      const overlayTitle = document.querySelector('#overlay-title');
+      const overlayDesc = document.querySelector('#overlay-desc');
+
+      // Setup Listeners
+      dimensionsSelect.addEventListener('change', (e) => {
+        const val = parseInt(e.target.value);
+        state.width = val;
+        state.height = val;
+        handleGenerate();
+      });
+
+      speedSlider.addEventListener('input', (e) => {
+        state.speed = parseInt(e.target.value);
+        speedLabel.textContent = `${state.speed}ms`;
+      });
+
+      document.querySelector('#btn-reseed').addEventListener('click', handleGenerate);
+      document.querySelector('#btn-visualize').addEventListener('click', visualizeAStar);
+      document.querySelector('#btn-race').addEventListener('click', () => {
+        if(state.gameState === 'setup') {
+          setGameState('racing');
+          startAiRace();
+        }
+      });
+      document.querySelector('#btn-overlay-close').addEventListener('click', () => {
+        overlay.style.display = 'none';
+        handleGenerate();
+      });
+
+      window.addEventListener('keydown', handleKeyDown);
+
+      // Initialize Matrix Pipelines
+      function handleGenerate() {
+        // Clear async loops
+        visTimeouts.forEach(clearTimeout);
+        visTimeouts = [];
+        if (aiInterval) clearInterval(aiInterval);
+
+        state.grid = generateMaze(state.width, state.height);
+        const h = state.grid.length;
+        const w = state.grid[0].length;
+
+        state.playerPos = [1, 1];
+        state.aiPos = [1, 1];
+        state.targetPos = [w - 2, h - 2];
+        state.visitedSet.clear();
+        state.pathSet.clear();
+        state.stats = { visitedCount: 0, pathLength: 0, computeTime: 0 };
+        
+        setGameState('setup');
+        updateStats();
+        renderGridStructure();
+      }
+
+      function setGameState(nextState) {
+        state.gameState = nextState;
+        
+        // Render UI Badge Mappings
+        stateBadge.className = 'state-badge';
+        dimensionsSelect.disabled = (nextState === 'visualizing' || nextState === 'racing');
+        document.querySelector('#btn-visualize').disabled = (nextState === 'visualizing');
+        
+        const btnRace = document.querySelector('#btn-race');
+        if(nextState === 'setup') {
+          btnRace.style.display = 'inline-flex';
+        } else {
+          btnRace.style.display = 'none';
+        }
+
+        switch(nextState) {
+          case 'setup':
+            stateBadge.textContent = 'Ready (Press Key / Outrun)';
+            stateBadge.classList.add('state-setup');
+            break;
+          case 'racing':
+            stateBadge.textContent = 'Race Pipeline Active';
+            stateBadge.classList.add('state-racing');
+            break;
+          case 'visualizing':
+            stateBadge.textContent = 'Evaluating Graph States...';
+            stateBadge.classList.add('state-visualizing');
+            break;
+          case 'won':
+            stateBadge.textContent = 'Biological Win';
+            stateBadge.classList.add('state-won');
+            showEndOverlay(true);
+            break;
+          case 'lost':
+            stateBadge.textContent = 'Silicon Victory';
+            stateBadge.classList.add('state-lost');
+            showEndOverlay(false);
+            break;
+          case 'finished-vis':
+            stateBadge.textContent = 'Path Solved';
+            stateBadge.classList.add('state-finished-vis');
+            break;
+        }
+      }
+
+      function updateStats() {
+        statTime.textContent = `${state.stats.computeTime} ms`;
+        statCost.textContent = `${state.stats.pathLength} units`;
+        statVisited.textContent = `${state.stats.visitedCount || state.visitedSet.size || 0} vertices`;
+      }
+
+      // Initial structural element grid node insertion pool
+      function renderGridStructure() {
+        container.innerHTML = '';
+        container.style.gridTemplateColumns = `repeat(${state.grid[0].length}, minmax(0, 1fr))`;
+        
+        for (let y = 0; y < state.grid.length; y++) {
+          for (let x = 0; x < state.grid[y].length; x++) {
+            const cell = document.createElement('div');
+            cell.id = `cell-${x}-${y}`;
+            cell.className = 'cell';
+            if (state.grid[y][x]) {
+              cell.classList.add('cell-wall');
+            }
+            if (state.targetPos[0] === x && state.targetPos[1] === y) {
+              cell.classList.add('cell-target');
+              cell.innerHTML = `<div class="target-icon"><svg style="width:10px;height:10px;font-weight:900;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34M12 2a4 4 0 0 1 4 4v6H8V6a4 4 0 0 1 4-4Z"/></svg></div>`;
+            }
+            container.appendChild(cell);
+          }
+        }
+        syncDynamicCells();
+      }
+
+      // Fast synchronization method dynamically toggling visual node changes
+      function syncDynamicCells() {
+        const h = state.grid.length;
+        const w = state.grid[0].length;
+        
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const cell = document.getElementById(`cell-${x}-${y}`);
+            if (!cell || state.grid[y][x]) continue;
+
+            // Strip variable state flags
+            cell.classList.remove('cell-player', 'cell-ai', 'cell-path', 'cell-visited');
+
+            if (state.playerPos[0] === x && state.playerPos[1] === y) {
+              cell.classList.add('cell-player');
+            } else if (state.aiPos[0] === x && state.aiPos[1] === y) {
+              cell.classList.add('cell-ai');
+            } else if (state.pathSet.has(`${x},${y}`)) {
+              cell.classList.add('cell-path');
+            } else if (state.visitedSet.has(`${x},${y}`)) {
+              cell.classList.add('cell-visited');
+            }
+          }
+        }
+      }
+
+      // Live Adversarial Logic Pipeline
+      function startAiRace() {
+        if (aiInterval) clearInterval(aiInterval);
+        
+        const startTime = performance.now();
+        const { path } = solveAStar(state.grid, state.aiPos, state.targetPos);
+        const endTime = performance.now();
+
+        state.stats.computeTime = parseFloat((endTime - startTime).toFixed(2));
+        state.stats.pathLength = path.length;
+        updateStats();
+
+        let step = 0;
+        aiInterval = setInterval(() => {
+          if (step < path.length) {
+            state.aiPos = path[step];
+            syncDynamicCells();
+            
+            if (state.aiPos[0] === state.targetPos[0] && state.aiPos[1] === state.targetPos[1]) {
+              clearInterval(aiInterval);
+              setGameState(state.gameState === 'won' ? 'won' : 'lost');
+            }
+            step++;
+          } else {
+            clearInterval(aiInterval);
+          }
+        }, state.speed * 2.5);
+      }
+
+      // Key Listener Core Frame Capture Hooks
+      function handleKeyDown(e) {
+        if (state.gameState !== 'racing' && state.gameState !== 'setup') return;
+
+        let [x, y] = state.playerPos;
+        const key = e.key.toLowerCase();
+
+        if (e.key === 'ArrowUp' || key === 'w') y--;
+        else if (e.key === 'ArrowDown' || key === 's') y++;
+        else if (e.key === 'ArrowLeft' || key === 'a') x--;
+        else if (e.key === 'ArrowRight' || key === 'd') x++;
+        else return;
+
+        e.preventDefault();
+
+        if (y >= 0 && y < state.grid.length && x >= 0 && x < state.grid[0].length && !state.grid[y][x]) {
+          state.playerPos = [x, y];
+          
+          if (state.gameState === 'setup') {
+            setGameState('racing');
+            startAiRace();
+          }
+
+          if (x === state.targetPos[0] && y === state.targetPos[1]) {
+            setGameState('won');
+            if (aiInterval) clearInterval(aiInterval);
+          }
+          syncDynamicCells();
+        }
+      }
+
+      // Step-by-Step Visualization Matrix Mapping Scheduler
+      function visualizeAStar() {
+        visTimeouts.forEach(clearTimeout);
+        visTimeouts = [];
+        if (aiInterval) clearInterval(aiInterval);
+        
+        state.playerPos = [1, 1];
+        state.aiPos = [1, 1];
+        state.visitedSet.clear();
+        state.pathSet.clear();
+        setGameState('visualizing');
+
+        const startTime = performance.now();
+        const { path, visitedOrder } = solveAStar(state.grid, [1, 1], state.targetPos);
+        const endTime = performance.now();
+
+        state.stats.visitedCount = visitedOrder.length;
+        state.stats.pathLength = path.length;
+        state.stats.computeTime = parseFloat((endTime - startTime).toFixed(2));
+        updateStats();
+
+        visitedOrder.forEach((pos, index) => {
+          const timeout = setTimeout(() => {
+            state.visitedSet.add(`${pos[0]},${pos[1]}`);
+            syncDynamicCells();
+
+            if (index === visitedOrder.length - 1) {
+              path.forEach((pPos, pIndex) => {
+                const pTimeout = setTimeout(() => {
+                  state.pathSet.add(`${pPos[0]},${pPos[1]}`);
+                  syncDynamicCells();
+                  if (pIndex === path.length - 1) {
+                    setGameState('finished-vis');
+                    updateStats();
+                  }
+                }, pIndex * state.speed);
+                visTimeouts.push(pTimeout);
+              });
+            }
+          }, index * (state.speed / 2));
+          visTimeouts.push(timeout);
+        });
+      }
+
+      function showEndOverlay(isWin) {
+        overlay.style.display = 'flex';
+        overlayIcon.className = 'overlay-icon-wrapper ' + (isWin ? 'icon-won' : 'icon-lost');
+        overlayTitle.textContent = isWin ? 'Human Intelligence Wins!' : 'Optimized Model Triumphs';
+        overlayDesc.textContent = isWin 
+          ? 'Incredible execution speeds! You outmaneuvered the true algorithmic priority queue calculations.'
+          : 'The heuristic expansion pipeline successfully evaluated all directional grid steps on the global optimal vector.';
+      }
+
+      // ==========================================
+      // ALGORITHMIC ENGINE CORE UTILITIES (DFS & A*)
+      // ==========================================
+      
+      function generateMaze(width, height) {
+        const w = width % 2 === 0 ? width + 1 : width;
+        const h = height % 2 === 0 ? height + 1 : height;
+        const grid = Array(h).fill(null).map(() => Array(w).fill(true));
+
+        const stack = [];
+        grid[1][1] = false; 
+        stack.push([1, 1]);
+
+        while (stack.length > 0) {
+          const [cx, cy] = stack[stack.length - 1];
+          const neighbors = [];
+
+          const dirs = [
+            [0, -2, 0, -1], // Up
+            [0, 2, 0, 1],   // Down
+            [-2, 0, -1, 0], // Left
+            [2, 0, 1, 0],   // Right
+          ];
+
+          for (const [dx, dy, wx, wy] of dirs) {
+            const nx = cx + dx;
+            const ny = cy + dy;
+
+            if (nx > 0 && nx < w - 1 && ny > 0 && ny < h - 1) {
+              if (grid[ny][nx]) {
+                neighbors.push([nx, ny, cx + wx, cy + wy]);
+              }
+            }
+          }
+
+          if (neighbors.length > 0) {
+            const [nx, ny, wx, wy] = neighbors[Math.floor(Math.random() * neighbors.length)];
+            grid[wy][wx] = false;
+            grid[ny][nx] = false;
+            stack.push([nx, ny]);
+          } else {
+            stack.pop();
+          }
+        }
+
+        grid[1][1] = false;
+        grid[h - 2][w - 2] = false;
+        return grid;
+      }
+
+      function solveAStar(grid, start, end) {
+        const height = grid.length;
+        const width = grid[0].length;
+        
+        const openSet = [];
+        const closedSet = new Set();
+        const visitedOrder = [];
+
+        const startNode = {
+          x: start[0],
+          y: start[1],
+          g: 0,
+          h: Math.abs(start[0] - end[0]) + Math.abs(start[1] - end[1]),
+          f: 0,
+          parent: null,
+        };
+        startNode.f = startNode.g + startNode.h;
+        openSet.push(startNode);
+
+        while (openSet.length > 0) {
+          openSet.sort((a, b) => a.f - b.f);
+          const current = openSet.shift();
+          
+          const posKey = `${current.x},${current.y}`;
+          if (closedSet.has(posKey)) continue;
+          
+          closedSet.add(posKey);
+          visitedOrder.push([current.x, current.y]);
+
+          if (current.x === end[0] && current.y === end[1]) {
+            const path = [];
+            let curr = current;
+            while (curr !== null) {
+              path.push([curr.x, curr.y]);
+              curr = curr.parent;
+            }
+            return { path: path.reverse(), visitedOrder };
+          }
+
+          const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+
+          for (const [dx, dy] of dirs) {
+            const nx = current.x + dx;
+            const ny = current.y + dy;
+
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height && !grid[ny][nx]) {
+              if (closedSet.has(`${nx},${ny}`)) continue;
+
+              const gScore = current.g + 1;
+              const hScore = Math.abs(nx - end[0]) + Math.abs(ny - end[1]);
+              const fScore = gScore + hScore;
+
+              const existingOpen = openSet.find(n => n.x === nx && n.y === ny);
+              
+              if (existingOpen) {
+                if (existingOpen.g > gScore) {
+                  existingOpen.g = gScore;
+                  existingOpen.f = fScore;
+                  existingOpen.parent = current;
+                }
+              } else {
+                openSet.push({
+                  x: nx,
+                  y: ny,
+                  g: gScore,
+                  h: hScore,
+                  f: fScore,
+                  parent: current
+                });
+              }
+            }
+          }
+        }
+
+        return { path: [], visitedOrder };
+      }
+
+      // Fire initial seed execution on document load
+      handleGenerate();
+    </script>
+  </body>
+</html>

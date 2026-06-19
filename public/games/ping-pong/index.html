@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>Ping Pong</title>
     <style>
       :root {
@@ -29,6 +29,8 @@
         margin: 0;
         min-height: 100vh;
         padding: 22px;
+        /* Prevents full page elastic rubber-banding on iOS devices */
+        overflow: hidden; 
       }
 
       main {
@@ -85,13 +87,15 @@
         display: block;
         max-width: 100%;
         width: 100%;
+        /* CRITICAL: Stops mobile browser gestures (pan/zoom) from overriding paddle drag movements */
+        touch-action: none; 
       }
 
       .controls {
         align-items: center;
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 16px;
         justify-content: space-between;
         margin-top: 24px;
       }
@@ -102,11 +106,11 @@
         color: var(--ink);
         cursor: pointer;
         font: inherit;
-        font-size: 0.78rem;
+        font-size: 0.85rem;
         font-weight: 900;
         letter-spacing: 0.12em;
-        min-height: 44px;
-        padding: 0 16px;
+        min-height: 48px; /* Slightly taller target size for mobile fingers */
+        padding: 0 24px;
         text-transform: uppercase;
       }
 
@@ -124,14 +128,25 @@
         header {
           align-items: start;
           flex-direction: column;
+          gap: 8px;
         }
 
         h1 {
-          font-size: 2.8rem;
+          font-size: 2.4rem;
         }
 
         canvas {
           box-shadow: 6px 6px 0 var(--red);
+        }
+
+        .controls {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        button {
+          width: 100%;
+          text-align: center;
         }
       }
     </style>
@@ -150,7 +165,7 @@
 
       <div class="controls">
         <button id="serve" type="button">Serve</button>
-        <p>Move with mouse, touch, W/S, or Arrow Up/Down.</p>
+        <p>Move with mouse, touch/drag canvas, W/S, or Arrow Keys.</p>
       </div>
     </main>
 
@@ -266,8 +281,16 @@
       }
 
       function pointerMove(event) {
+        // Prevent default screen scrolling behaviors on touch setups explicitly
+        if (event.cancelable) {
+          event.preventDefault();
+        }
+        
         const rect = canvas.getBoundingClientRect();
-        const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+        const clientY = event.touches && event.touches.length > 0 
+          ? event.touches[0].clientY 
+          : event.clientY;
+          
         const scale = canvas.height / rect.height;
         state.left.y = clamp(
           (clientY - rect.top) * scale - state.left.height / 2,
@@ -276,8 +299,12 @@
         );
       }
 
+      // Input Event Handlers
       canvas.addEventListener("mousemove", pointerMove);
-      canvas.addEventListener("touchmove", pointerMove, { passive: true });
+      
+      // Added touchstart so paddle instantly jumps to initial touch position
+      canvas.addEventListener("touchstart", pointerMove, { passive: false });
+      canvas.addEventListener("touchmove", pointerMove, { passive: false });
 
       window.addEventListener("keydown", (event) => {
         state.keys.add(event.key);
